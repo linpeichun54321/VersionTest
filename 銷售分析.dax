@@ -1,0 +1,154 @@
+﻿EVALUATE
+   var BIKES_COUNT = COUNTROWS(
+          FILTER( Sales,
+               AND( Sales[Country]="USA",
+                    Sales[Product category]="Bikes")
+                )
+)
+RETURN
+  row("隸屬美國訂單數量",BIKES_COUNT) 
+  
+ ----
+ EVALUATE
+   var california_count= COUNTROWS(
+           FILTER(Sales,
+              Sales[Country]="USA"&& Sales[Product category]="Bikes" && Sales[State]="California"
+              )
+  )
+RETURN
+    ROW("加州訂單",California_count)
+    
+    
+---
+ EVALUATE
+   var NotInUSA= COUNTROWS(
+           FILTER(Sales,
+              NOT Sales[Product category]="USA" 
+              )
+  )
+RETURN
+    ROW("其他國家訂單",NotInUSA)
+    
+---------    
+EVALUATE
+
+    ROW("美法訂單總數",
+         COUNTROWS(
+         
+         FILTER(Sales,
+                 Sales[Country] in {"usa","FRANCE"}
+                 )
+        )
+    )
+    
+    
+-------------
+EVALUATE
+    
+  ADDCOLUMNS(Sales,
+   "國家中文",
+   SWITCH(
+          Sales[Country],
+          "USA","美國",
+          "France","法國",
+          "Germany","德國",
+          "其他"
+           )
+)
+
+
+---------
+EVALUATE
+
+ADDCOLUMNS(Sales,"績效",
+SWITCH(TRUE,
+    Sales[Quantity] * Sales[Price per item]-Sales[Sales plan]>200,"A",
+    Sales[Quantity] * Sales[Price per item]-Sales[Sales plan]>100,"B",
+    "C"))
+---------
+EVALUATE
+VAR TotalSales =
+    CALCULATE(
+        SUM(Sales[Sales fact]),
+        Sales[Country] IN {"USA","France","Germany","UK"}
+    )
+RETURN
+ADDCOLUMNS(
+    SUMMARIZE(
+        FILTER(Sales, Sales[Country] IN {"USA","France","Germany","UK"}),
+        Sales[Country],
+        "Total Sales", SUM(Sales[Sales fact])
+    ),
+    "Sales %", DIVIDE([Total Sales], TotalSales)
+)
+
+-----------
+EVALUATE
+      row("第3台異常狀態",bitand(13,2)
+      
+-----
+   {total,
+    ROUND(usa/total,3)*100 & "%"
+    ROUND(gem/total,3)*100 & "%"
+    ROUND(fra/total,3)*100 & "%"
+    ROUND(gbr/total,3)*100 & "%"
+      
+      
+      
+      
+      
+      
+----
+
+EVALUATE
+   var total=sum(Sales[Sales fact])
+   var total2=SUMX(Sales,Sales[Price per item]*Sales[Quantity])
+   
+   var usa= SUMX(FILTER(Sales,[country]="usa",[price per item]*[Quantity])
+   var gem= SUMX(FILTER(Sales,[country]="germany",[price per item]*[Quantity])
+   var fra= SUMX(FILTER(Sales,[country]="france",[price per item]*[Quantity])
+   var gbr= SUMX(FILTER(Sales,[country]="Great Britain",[price per item]*[Quantity])
+   
+   RETURN
+    TOPN(10,
+           ADDCOLUMNS(Sales,"國家%",
+              SWITCH([COUNTRY],
+          "USA",
+               ROUND([Sales fact]/usa,5)*100 & "%" 
+          "FRANCE",
+               ROUND([Sales fact]/fra,5)*100 & "%"
+          "GERMANY",
+               ROUND([Sales fact]/gem,5)*100 & "%"
+          "GREAT BRITANT"
+              ,ROUND([Sales fact]/gbr,5)*100 & "%"
+          "異常"
+       )
+       ),
+       
+ORDER BY
+      [國家], DESC
+      )
+      
+      
+      
+EVALUATE
+
+   {total,round(usa/total,3)*100,round(gem/total,3)*100,round(fra/total,3)*100,ROUND(gbr/total,3)*100}
+   
+   
+   
+   ------
+EVALUATE
+ADDCOLUMNS(
+    Sales,
+    "訂單金額", Sales[Quantity] * Sales[Price per item],
+    "全球占比 %",
+    DIVIDE(
+        Sales[Quantity] * Sales[Price per item],
+        CALCULATE(
+            SUMX(Sales, Sales[Quantity] * Sales[Price per item]),
+            ALL(Sales)
+        )
+    )
+)
+   
